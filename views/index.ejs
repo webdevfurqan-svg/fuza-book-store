@@ -1,0 +1,26 @@
+<%- include('partials/header') %>
+
+<h1>Browse Books</h1>
+
+<form action="/" method="GET" class="search-form">
+  <input type="text" name="search" placeholder="Search by title..." value="<%= searchTerm %>">
+  <button type="submit">Search</button>
+</form>
+
+<% if (books.length === 0) { %>
+  <p>No books found.</p>
+<% } else { %>
+  <div class="book-grid">
+    <% books.forEach(function(book) { %>
+      <div class="book-card">
+        <img src="<%= book.coverUrl %>" alt="<%= book.title %>" class="book-cover">
+        <h3><%= book.title %></h3>
+        <p class="book-author">by <%= book.author %></p>
+        <p class="book-downloads"><%= book.downloads %> downloads</p>
+        <a href="/download/<%= book._id %>" target="_blank" class="download-btn">Download</a>
+      </div>
+    <% }); %>
+  </div>
+<% } %>
+
+<%- include('partials/footer') %>
