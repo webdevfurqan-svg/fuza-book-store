@@ -32,6 +32,7 @@ app.use(async (req, res, next) => {
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+app.set('trust proxy', 1); // required behind Vercel's proxy for secure cookies
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
@@ -44,10 +45,13 @@ app.use(session({
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions',
-    ttl: 14 * 24 * 60 * 60 
+    ttl: 14 * 24 * 60 * 60
   }),
   cookie: {
-    maxAge: 1000 * 60 * 60 * 24 * 7 
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
 
@@ -106,7 +110,6 @@ app.get('/download/:id', async (req, res) => {
   }
 });
 
-
 app.get('/admin/login', (req, res) => {
   res.render('login', { error: null });
 });
@@ -143,12 +146,16 @@ app.get('/admin/logout', (req, res) => {
 app.get('/admin', requireAdmin, async (req, res) => {
   try {
     const books = await Book.find().sort({ createdAt: -1 });
-    res.render('admin', { books, error: null });
+    res.render('admin', {
+      books,
+      error: null,
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      uploadPreset: process.env.CLOUDINARY_UPLOAD_PRESET
+    });
   } catch (err) {
     res.status(500).send('Error loading admin dashboard');
   }
 });
-
 
 app.post('/admin/upload', requireAdmin, async (req, res) => {
   try {
@@ -183,7 +190,6 @@ app.post('/admin/upload', requireAdmin, async (req, res) => {
     res.render('admin', { books, error: 'Could not create book record.' });
   }
 });
-
 
 app.post('/admin/delete/:id', requireAdmin, async (req, res) => {
   const id = req.params.id;

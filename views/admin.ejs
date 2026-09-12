@@ -53,8 +53,8 @@
 <p><a href="/admin/logout">Logout</a></p>
 
 <script>
-  const CLOUD_NAME = "YOUR_CLOUDINARY_CLOUD_NAME"; // Insert your Cloudinary Cloud Name
-  const PRESET = "fuza_books_preset";              // Your unsigned upload preset
+  const CLOUD_NAME = "<%= cloudName %>";
+  const PRESET = "<%= uploadPreset %>";
 
   const form = document.getElementById('uploadForm');
   const statusMsg = document.getElementById('statusMsg');
@@ -66,7 +66,6 @@
     statusMsg.innerText = "Uploading files to cloud storage...";
 
     try {
-      // 1. Upload Cover Image to Cloudinary
       const coverFile = document.getElementById('cover').files[0];
       const coverData = new FormData();
       coverData.append('file', coverFile);
@@ -78,7 +77,6 @@
       });
       const coverJson = await coverRes.json();
 
-      // 2. Upload PDF File to Cloudinary (using raw resource_type)
       const pdfFile = document.getElementById('pdf').files[0];
       const pdfData = new FormData();
       pdfData.append('file', pdfFile);
@@ -90,7 +88,6 @@
       });
       const pdfJson = await pdfRes.json();
 
-      // 3. Post URLs and Metadata as lightweight JSON to Express
       statusMsg.innerText = "Saving book record...";
       const response = await fetch('/admin/upload', {
         method: 'POST',
